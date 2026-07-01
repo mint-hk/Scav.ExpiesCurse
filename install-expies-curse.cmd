@@ -10,8 +10,8 @@ set "EXPIES_CURSE_LOCAL=%SCRIPT_DIR%Scav.ExpiesCurse.dll"
 set "WORLD_SETTINGS_LOCAL=%SCRIPT_DIR%Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_LOCAL=%SCRIPT_DIR%ScavLib.API.dll"
 
-set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.0/Scav.ExpiesCurse.dll"
-set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper.dll"
+set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.0/Scav.ExpiesCurse-0.1.0.zip"
+set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper-0.1.0.zip"
 set "SCAVLIB_URL=https://github.com/Kanisuko/ScavLib-API-DLL-Repository/releases/download/v0.8.0/ScavLib.API.dll"
 
 echo Scav.ExpiesCurse installer
@@ -90,11 +90,29 @@ if exist "%LOCAL_PATH%" (
 if defined URL (
     echo [Expie's Curse Installer] Downloading %NAME%...
     if not exist "%TMP_DIR%" mkdir "%TMP_DIR%"
-    powershell -Command "Invoke-WebRequest -Uri '%URL%' -OutFile '%TMP_DIR%\download.tmp'"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri '%URL%' -OutFile '%TMP_DIR%\download.tmp'"
     if errorlevel 1 (
         echo [Expie's Curse Installer] Failed to download %NAME%.
         exit /b 1
     )
+
+    echo %URL% | findstr /I ".zip" >nul
+    if not errorlevel 1 (
+        rmdir /s /q "%TMP_DIR%\extract" >nul 2>nul
+        mkdir "%TMP_DIR%\extract"
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Force -Path '%TMP_DIR%\download.tmp' -DestinationPath '%TMP_DIR%\extract'"
+        if errorlevel 1 (
+            echo [Expie's Curse Installer] Failed to extract %NAME%.
+            exit /b 1
+        )
+        if not exist "%TMP_DIR%\extract\%NAME%" (
+            echo [Expie's Curse Installer] %NAME% was not found inside downloaded zip.
+            exit /b 1
+        )
+        copy /y "%TMP_DIR%\extract\%NAME%" "%DEST%" >nul
+        exit /b 0
+    )
+
     copy /y "%TMP_DIR%\download.tmp" "%DEST%" >nul
     del /q "%TMP_DIR%\download.tmp" >nul 2>nul
     exit /b 0
