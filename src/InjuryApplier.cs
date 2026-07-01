@@ -51,16 +51,13 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult BleedingWound(SeverityMode severity)
         {
-            var limb = GetRandomUsableLimb(l => l.bleedAmount < 70f && l.pain < 85f && l.skinHealth > 15f && l.muscleHealth > 15f);
-            if (limb == null) return InjuryResult.Skip("all usable limbs are already heavily wounded");
-
             var skinDamage = Roll(45f, 75f, severity);
             var muscleDamage = Roll(55f, 85f, severity);
             var bleed = Roll(20f, 45f, severity);
             var pain = Roll(45f, 75f, severity);
 
-            if (limb.skinHealth - skinDamage <= 15f || limb.muscleHealth - muscleDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f)
-                return InjuryResult.Skip($"bleeding wound would exceed safety limits on {LimbName(limb)}");
+            var limb = GetRandomUsableLimb(l => CanApplyLimbDamage(l, skinDamage, muscleDamage, bleed, pain));
+            if (limb == null) return InjuryResult.Skip("bleeding wound would exceed safety limits on all usable limbs");
 
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.DamageMuscle(limb, muscleDamage);
@@ -73,17 +70,14 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Shrapnel(SeverityMode severity)
         {
-            var limb = GetRandomUsableLimb(l => l.bleedAmount < 70f && l.pain < 85f && l.skinHealth > 15f && l.muscleHealth > 15f && l.shrapnel < 4);
-            if (limb == null) return InjuryResult.Skip("all usable limbs are already heavily wounded or full of shrapnel");
-
             var skinDamage = Roll(45f, 75f, severity);
             var muscleDamage = Roll(55f, 85f, severity);
             var bleed = Roll(16f, 38f, severity);
             var pain = Roll(45f, 75f, severity);
             var shrapnel = 5;
 
-            if (limb.skinHealth - skinDamage <= 15f || limb.muscleHealth - muscleDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f || limb.shrapnel + shrapnel >= 10)
-                return InjuryResult.Skip($"shrapnel would exceed safety limits on {LimbName(limb)}");
+            var limb = GetRandomUsableLimb(l => CanApplyLimbDamage(l, skinDamage, muscleDamage, bleed, pain) && l.shrapnel + shrapnel < 10);
+            if (limb == null) return InjuryResult.Skip("shrapnel would exceed safety limits on all usable limbs");
 
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.DamageMuscle(limb, muscleDamage);
@@ -97,12 +91,9 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Infection(SeverityMode severity)
         {
-            var limb = GetRandomUsableLimb(l => l.infectionAmount < 75f);
-            if (limb == null) return InjuryResult.Skip("all usable limbs already have high infection");
-
             var infection = Roll(40f, 60f, severity);
-            if (limb.infectionAmount + infection >= 75f)
-                return InjuryResult.Skip($"infection would exceed safety limits on {LimbName(limb)}");
+            var limb = GetRandomUsableLimb(l => l.infectionAmount + infection < 75f);
+            if (limb == null) return InjuryResult.Skip("infection would exceed safety limits on all usable limbs");
 
             LimbUtil.SetInfectionRaw(limb, limb.infectionAmount + infection);
             PlayInjurySound("fleshrip");
@@ -112,12 +103,10 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Fracture(SeverityMode severity)
         {
-            var limb = GetRandomUsableLimb(l => !l.broken && l != LimbUtil.GetLimb(LimbSlot.Head));
-            if (limb == null) return InjuryResult.Skip("all usable limbs are already broken");
-
             var pain = Roll(55f, 75f, severity);
-            if (limb.pain + pain >= 85f)
-                return InjuryResult.Skip($"fracture would exceed safety limits on {LimbName(limb)}");
+            var head = LimbUtil.GetLimb(LimbSlot.Head);
+            var limb = GetRandomUsableLimb(l => !l.broken && l != head && l.pain + pain < 85f);
+            if (limb == null) return InjuryResult.Skip("fracture would exceed safety limits on all usable limbs");
 
             limb.BreakBone();
             limb.boneHealTimer = Roll(6f, 18f, severity);
@@ -128,17 +117,14 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Dislocation(SeverityMode severity)
         {
-            var limb = GetRandomUsableLimb(l => !l.dislocated);
-            if (limb == null) return InjuryResult.Skip("all usable limbs are already dislocated");
-
-            limb.Dislocate();
             var skinDamage = Roll(10f, 24f, severity);
             var bleed = Roll(6f, 16f, severity);
             var pain = Roll(50f, 70f, severity);
 
-            if (limb.skinHealth - skinDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f)
-                return InjuryResult.Skip($"dislocation would exceed safety limits on {LimbName(limb)}");
+            var limb = GetRandomUsableLimb(l => !l.dislocated && CanApplyLimbDamage(l, skinDamage, 0f, bleed, pain));
+            if (limb == null) return InjuryResult.Skip("dislocation would exceed safety limits on all usable limbs");
 
+            limb.Dislocate();
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.SetBleedRaw(limb, limb.bleedAmount + bleed);
             LimbUtil.SetPainRaw(limb, limb.pain + pain);
@@ -353,7 +339,7 @@ namespace Scav.ExpiesCurse
 
         private static Limb GetRandomUsableLimb(Func<Limb, bool> predicate = null)
         {
-            var limbs = LimbUtil.GetAllLimbs();
+            var limbs = new List<Limb>(LimbUtil.GetAllLimbs());
             for (var i = limbs.Count - 1; i >= 0; i--)
             {
                 var limb = limbs[i];
@@ -362,6 +348,14 @@ namespace Scav.ExpiesCurse
             }
 
             return limbs.Count == 0 ? null : limbs[Random.Range(0, limbs.Count)];
+        }
+
+        private static bool CanApplyLimbDamage(Limb limb, float skinDamage, float muscleDamage, float bleed, float pain)
+        {
+            return limb.skinHealth - skinDamage > 15f
+                && limb.muscleHealth - muscleDamage > 15f
+                && limb.bleedAmount + bleed < 70f
+                && limb.pain + pain < 85f;
         }
 
         private static string LimbName(Limb limb)

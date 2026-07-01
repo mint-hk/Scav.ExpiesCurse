@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Fixes dislocation safety checks so skipped injuries do not mutate limbs first.
+- Chooses from safe candidate limbs for limb-based injuries instead of skipping after one bad random limb.
+- Copies the limb list before filtering candidate limbs.
+
 ## 0.1.1
 
 - Adds a hard dependency on `Scav.WorldSettingsHelper` for correct BepInEx load order.

@@ -1,6 +1,6 @@
 param(
     [string]$GameDir = "C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo",
-    [string]$Version = "0.1.1"
+    [string]$Version = "0.1.2"
 )
 
 $ErrorActionPreference = "Stop"
