@@ -74,6 +74,7 @@ namespace Scav.ExpiesCurse
 
         private void Update()
         {
+            UpdateCurseTimer();
         }
 
         private static void RegisterWorldSettings()
@@ -287,14 +288,4 @@ namespace Scav.ExpiesCurse
             return null;
         }
     }
-
-    [HarmonyPatch(typeof(WorldGeneration), "UpdateWorld")]
-    internal static class CurseTimerWorldUpdatePatch
-    {
-        private static void Postfix()
-        {
-            ExpiesCursePlugin.TickCurseTimer();
-        }
-    }
-
 }
