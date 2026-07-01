@@ -11,7 +11,7 @@ set "WORLD_SETTINGS_LOCAL=%SCRIPT_DIR%Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_LOCAL=%SCRIPT_DIR%ScavLib.API.dll"
 
 set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.3/Scav.ExpiesCurse.dll"
-set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper.dll"
+set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.1/Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_URL=https://github.com/Kanisuko/ScavLib-API-DLL-Repository/releases/download/v0.8.0/ScavLib.API.dll"
 set "BEPINEX_URL=https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.3/BepInEx_win_x64_5.4.23.3.zip"
 
