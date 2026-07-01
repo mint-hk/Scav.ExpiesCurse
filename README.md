@@ -2,7 +2,7 @@
 
 Scav.ExpiesCurse is a Casualties Unknown / Scav Prototype challenge mod that periodically inflicts a random dangerous but usually non-instant-lethal injury on the player.
 
-The player character, Expie, receives a short warning before the injury lands: dialogue, a temporary "Sense of impending doom" moodle, then the selected injury after a short delay.
+The player character receives a short warning before the injury lands: dialogue, a temporary "Sense of impending doom" moodle, then the selected injury after a short delay.
 
 The mod also keeps developer console commands for manually testing injuries.
 

@@ -10,8 +10,8 @@ set "EXPIES_CURSE_LOCAL=%SCRIPT_DIR%Scav.ExpiesCurse.dll"
 set "WORLD_SETTINGS_LOCAL=%SCRIPT_DIR%Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_LOCAL=%SCRIPT_DIR%ScavLib.API.dll"
 
-set "EXPIES_CURSE_URL="
-set "WORLD_SETTINGS_URL="
+set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.0/Scav.ExpiesCurse.dll"
+set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_URL=https://github.com/Kanisuko/ScavLib-API-DLL-Repository/releases/download/v0.8.0/ScavLib.API.dll"
 
 echo Scav.ExpiesCurse installer
