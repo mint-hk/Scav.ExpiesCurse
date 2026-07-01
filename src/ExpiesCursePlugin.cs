@@ -12,6 +12,7 @@ using Scav.WorldSettingsHelper;
 namespace Scav.ExpiesCurse
 {
     [BepInDependency("com.kanisuko.scavlib", BepInDependency.DependencyFlags.HardDependency)]
+    [BepInDependency("com.mint-hk.scav.worldsettingshelper", BepInDependency.DependencyFlags.HardDependency)]
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     public sealed class ExpiesCursePlugin : BaseUnityPlugin
     {
@@ -124,7 +125,7 @@ namespace Scav.ExpiesCurse
 
             var enabled = WorldSettingsApi.GetBool(SettingEnabled, false);
             var intervalMinutes = Mathf.Clamp(WorldSettingsApi.GetFloat(SettingInterval, 10f), 1f, 30f);
-            var severity = GetCurseSeverity(WorldGeneration.runSettings);
+            var severity = GetCurseSeverity();
 
             if (!enabled)
             {
@@ -153,13 +154,23 @@ namespace Scav.ExpiesCurse
             GameUtil.Log($"[Expie's Curse] Triggered; applying delayed {severity.ToString().ToLowerInvariant()} injury.");
             RunDelayedInjurySafe(() =>
             {
-                var result = InjuryApplier.ApplyRandom(severity, out var injuryName);
-                GameUtil.Log($"[Expie's Curse] {injuryName} ({severity.ToString().ToLowerInvariant()}): {result.Message}");
-                _curseInjuryQueued = false;
+                try
+                {
+                    var result = InjuryApplier.ApplyRandom(severity, out var injuryName);
+                    GameUtil.Log($"[Expie's Curse] {injuryName} ({severity.ToString().ToLowerInvariant()}): {result.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Instance?.Logger.LogError($"Failed to apply delayed injury: {ex}");
+                }
+                finally
+                {
+                    _curseInjuryQueued = false;
+                }
             });
         }
 
-        private static SeverityMode GetCurseSeverity(Dictionary<string, object> settings)
+        private static SeverityMode GetCurseSeverity()
         {
             var value = WorldSettingsApi.GetInt(SettingSeverity, 1);
             if (value >= 2) return SeverityMode.Min;
@@ -189,17 +200,28 @@ namespace Scav.ExpiesCurse
         internal static IEnumerator DelayedInjuryCoroutineStatic(Action applyInjury)
         {
             ShowImpendingDoomMoodle = true;
+            try
+            {
+                var body = GameUtil.GetBody();
+                if (body != null && body.talker != null)
+                    body.talker.Talk(DelayedInjuryLines[UnityEngine.Random.Range(0, DelayedInjuryLines.Length)], null, true, true);
 
-            var body = GameUtil.GetBody();
-            if (body != null && body.talker != null)
-                body.talker.Talk(DelayedInjuryLines[UnityEngine.Random.Range(0, DelayedInjuryLines.Length)], null, true, true);
+                var startTime = WorldGeneration.TotalRunTime();
+                while (WorldGeneration.TotalRunTime() - startTime < 10f)
+                {
+                    var world = WorldGeneration.world;
+                    if (world == null || !world.worldExists || !PlayerUtil.IsAlive())
+                        yield break;
 
-            var startTime = WorldGeneration.TotalRunTime();
-            while (WorldGeneration.TotalRunTime() - startTime < 10f)
-                yield return null;
+                    yield return null;
+                }
 
-            ShowImpendingDoomMoodle = false;
-            applyInjury?.Invoke();
+                applyInjury?.Invoke();
+            }
+            finally
+            {
+                ShowImpendingDoomMoodle = false;
+            }
         }
     }
 
@@ -275,12 +297,4 @@ namespace Scav.ExpiesCurse
         }
     }
 
-    [HarmonyPatch(typeof(MoodleManager), "Update")]
-    internal static class CurseTimerMoodleUpdatePatch
-    {
-        private static void Postfix()
-        {
-            ExpiesCursePlugin.TickCurseTimer();
-        }
-    }
 }

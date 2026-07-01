@@ -62,6 +62,7 @@ for %%D in (
 
 echo [Expie's Curse Installer] Could not find the game automatically.
 set /p GAME_DIR=Enter full game path: 
+set "GAME_DIR=%GAME_DIR:"=%"
 if not defined GAME_DIR exit /b 1
 exit /b 0
 

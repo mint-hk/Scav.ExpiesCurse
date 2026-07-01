@@ -47,6 +47,12 @@ namespace Scav.ExpiesCurse
                 return;
             }
 
+            if (!PlayerUtil.IsAlive())
+            {
+                GameUtil.Log("[Expie's Curse] Player is not alive or no world is loaded.");
+                return;
+            }
+
             if (requested == "random")
             {
                 ExecuteInjury(delayed, () => ApplyRandomInjury(severity));
@@ -56,12 +62,6 @@ namespace Scav.ExpiesCurse
             if (!InjuryApplier.Injuries.TryGetValue(requested, out var injury))
             {
                 GameUtil.Log($"[Expie's Curse] Unknown injury '{args[1]}'. Use 'ri list'.");
-                return;
-            }
-
-            if (!PlayerUtil.IsAlive())
-            {
-                GameUtil.Log("[Expie's Curse] Player is not alive or no world is loaded.");
                 return;
             }
 
