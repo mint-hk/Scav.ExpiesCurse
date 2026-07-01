@@ -59,6 +59,9 @@ namespace Scav.ExpiesCurse
             var bleed = Roll(20f, 45f, severity);
             var pain = Roll(45f, 75f, severity);
 
+            if (limb.skinHealth - skinDamage <= 15f || limb.muscleHealth - muscleDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f)
+                return InjuryResult.Skip($"bleeding wound would exceed safety limits on {LimbName(limb)}");
+
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.DamageMuscle(limb, muscleDamage);
             LimbUtil.SetBleedRaw(limb, limb.bleedAmount + bleed);
@@ -79,6 +82,9 @@ namespace Scav.ExpiesCurse
             var pain = Roll(45f, 75f, severity);
             var shrapnel = 5;
 
+            if (limb.skinHealth - skinDamage <= 15f || limb.muscleHealth - muscleDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f || limb.shrapnel + shrapnel >= 10)
+                return InjuryResult.Skip($"shrapnel would exceed safety limits on {LimbName(limb)}");
+
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.DamageMuscle(limb, muscleDamage);
             LimbUtil.SetBleedRaw(limb, limb.bleedAmount + bleed);
@@ -95,6 +101,9 @@ namespace Scav.ExpiesCurse
             if (limb == null) return InjuryResult.Skip("all usable limbs already have high infection");
 
             var infection = Roll(40f, 60f, severity);
+            if (limb.infectionAmount + infection >= 75f)
+                return InjuryResult.Skip($"infection would exceed safety limits on {LimbName(limb)}");
+
             LimbUtil.SetInfectionRaw(limb, limb.infectionAmount + infection);
             PlayInjurySound("fleshrip");
 
@@ -106,9 +115,13 @@ namespace Scav.ExpiesCurse
             var limb = GetRandomUsableLimb(l => !l.broken && l != LimbUtil.GetLimb(LimbSlot.Head));
             if (limb == null) return InjuryResult.Skip("all usable limbs are already broken");
 
+            var pain = Roll(55f, 75f, severity);
+            if (limb.pain + pain >= 85f)
+                return InjuryResult.Skip($"fracture would exceed safety limits on {LimbName(limb)}");
+
             limb.BreakBone();
             limb.boneHealTimer = Roll(6f, 18f, severity);
-            LimbUtil.SetPainRaw(limb, limb.pain + Roll(55f, 75f, severity));
+            LimbUtil.SetPainRaw(limb, limb.pain + pain);
 
             return InjuryResult.Apply($"fracture {LimbName(limb)}, timer {limb.boneHealTimer:F0}");
         }
@@ -121,9 +134,14 @@ namespace Scav.ExpiesCurse
             limb.Dislocate();
             var skinDamage = Roll(10f, 24f, severity);
             var bleed = Roll(6f, 16f, severity);
+            var pain = Roll(50f, 70f, severity);
+
+            if (limb.skinHealth - skinDamage <= 15f || limb.bleedAmount + bleed >= 70f || limb.pain + pain >= 85f)
+                return InjuryResult.Skip($"dislocation would exceed safety limits on {LimbName(limb)}");
+
             LimbUtil.DamageSkin(limb, skinDamage);
             LimbUtil.SetBleedRaw(limb, limb.bleedAmount + bleed);
-            LimbUtil.SetPainRaw(limb, limb.pain + Roll(50f, 70f, severity));
+            LimbUtil.SetPainRaw(limb, limb.pain + pain);
 
             return InjuryResult.Apply($"dislocation {LimbName(limb)}: skin -{skinDamage:F0}, bleed +{bleed:F0}");
         }
@@ -136,11 +154,15 @@ namespace Scav.ExpiesCurse
             var bleeding = Roll(14f, 18f, severity);
             var hemothorax = Roll(8f, 18f, severity);
             var thorax = LimbUtil.GetLimb(LimbSlot.Thorax);
+            var pain = Roll(20f, 35f, severity);
+
+            if (PlayerUtil.GetInternalBleeding() + bleeding >= 20f || PlayerUtil.GetHemothorax() + hemothorax >= 60f || (thorax != null && thorax.pain + pain >= 85f))
+                return InjuryResult.Skip("internal bleeding would exceed safety limits");
 
             PlayerUtil.SetInternalBleedingRaw(PlayerUtil.GetInternalBleeding() + bleeding);
             PlayerUtil.SetHemothoraxRaw(PlayerUtil.GetHemothorax() + hemothorax);
             if (thorax != null)
-                LimbUtil.SetPainRaw(thorax, thorax.pain + Roll(20f, 35f, severity));
+                LimbUtil.SetPainRaw(thorax, thorax.pain + pain);
             PlayInjurySound("fleshrip");
 
             return InjuryResult.Apply($"internal bleeding +{bleeding:F0}, hemothorax +{hemothorax:F0}");
@@ -153,6 +175,9 @@ namespace Scav.ExpiesCurse
 
             var total = Roll(60f, 85f, severity);
             var current = Roll(45f, 65f, severity);
+
+            if (PlayerUtil.GetVenomTotal() + total >= 85f || PlayerUtil.GetVenomCurrent() + current >= 75f)
+                return InjuryResult.Skip("venom would exceed safety limits");
 
             PlayerUtil.SetVenomTotalRaw(PlayerUtil.GetVenomTotal() + total);
             PlayerUtil.SetVenomCurrentRaw(PlayerUtil.GetVenomCurrent() + current);
@@ -167,6 +192,9 @@ namespace Scav.ExpiesCurse
                 return InjuryResult.Skip("radiation sickness is already high");
 
             var radiation = Roll(6f, 9f, severity);
+            if (PlayerUtil.GetRadiationSickness() + radiation > 15f)
+                return InjuryResult.Skip("radiation sickness would exceed safety limits");
+
             PlayerUtil.SetRadiationSicknessRaw(PlayerUtil.GetRadiationSickness() + radiation);
             PlayInjurySound("fleshrip");
 
@@ -179,6 +207,9 @@ namespace Scav.ExpiesCurse
                 return InjuryResult.Skip("sickness is already high");
 
             var sickness = Roll(45f, 70f, severity);
+            if (PlayerUtil.GetSicknessAmount() + sickness >= 75f)
+                return InjuryResult.Skip("sickness would exceed safety limits");
+
             PlayerUtil.SetSicknessAmountRaw(PlayerUtil.GetSicknessAmount() + sickness);
             PlayInjurySound("burp");
 
@@ -187,10 +218,10 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Hunger(SeverityMode severity)
         {
-            if (PlayerUtil.GetHunger() <= 25f)
+            if (PlayerUtil.GetHunger() <= 30f)
                 return InjuryResult.Skip("hunger is already dangerously low");
 
-            var value = Roll(10f, 25f, severity);
+            var value = Roll(20f, 30f, severity);
             PlayerUtil.SetHungerRaw(value);
             PlayInjurySound("thirstdown");
             return InjuryResult.Apply($"hunger set to {PlayerUtil.GetHunger():F0}");
@@ -198,10 +229,10 @@ namespace Scav.ExpiesCurse
 
         private static InjuryResult Thirst(SeverityMode severity)
         {
-            if (PlayerUtil.GetThirst() <= 25f)
+            if (PlayerUtil.GetThirst() <= 35f)
                 return InjuryResult.Skip("thirst is already dangerously low");
 
-            var value = Roll(10f, 25f, severity);
+            var value = Roll(25f, 35f, severity);
             PlayerUtil.SetThirstRaw(value);
             PlayInjurySound("thirstdown");
             return InjuryResult.Apply($"thirst set to {PlayerUtil.GetThirst():F0}");
@@ -213,7 +244,10 @@ namespace Scav.ExpiesCurse
                 return InjuryResult.Skip("happiness is already very low");
 
             var value = Roll(15f, 30f, severity);
-            PlayerUtil.SetHappinessRaw(Mathf.Max(PlayerUtil.GetHappinessBase() - value, -60f));
+            if (PlayerUtil.GetHappinessBase() - value < -60f)
+                return InjuryResult.Skip("happiness would exceed safety limits");
+
+            PlayerUtil.SetHappinessRaw(PlayerUtil.GetHappinessBase() - value);
             PlayInjurySound("mooddown");
             return InjuryResult.Apply($"base happiness -{value:F0}, now {PlayerUtil.GetHappinessBase():F0}");
         }
@@ -226,6 +260,10 @@ namespace Scav.ExpiesCurse
             var value = Roll(60f, 80f, severity);
             var consciousness = Roll(30f, 25f, severity);
             var head = LimbUtil.GetLimb(LimbSlot.Head);
+
+            if (PlayerUtil.GetHearingLoss() + value >= 80f || (head != null && head.pain + 100f > 100f))
+                return InjuryResult.Skip("hearing loss would exceed safety limits");
+
             PlayerUtil.SetHearingLossRaw(PlayerUtil.GetHearingLoss() + value);
             PlayerUtil.SetConsciousnessRaw(consciousness);
             if (head != null)
@@ -242,6 +280,9 @@ namespace Scav.ExpiesCurse
             var brainDamage = Roll(4f, 7f, severity);
             var consciousness = Roll(30f, 25f, severity);
             var head = LimbUtil.GetLimb(LimbSlot.Head);
+
+            if (PlayerUtil.GetBrainHealth() - brainDamage < 80f || (head != null && head.pain + 100f > 100f))
+                return InjuryResult.Skip("brain damage would exceed safety limits");
 
             PlayerUtil.SetBrainHealthRaw(PlayerUtil.GetBrainHealth() - brainDamage);
             PlayerUtil.SetConsciousnessRaw(consciousness);

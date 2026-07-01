@@ -18,7 +18,7 @@ namespace Scav.ExpiesCurse
     {
         public const string PluginGuid = "com.mint-hk.scav.expiescurse";
         public const string PluginName = "Scav.ExpiesCurse";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = "0.1.1";
         public const string SettingEnabled = "expies_curse_enabled";
         public const string SettingSeverity = "expies_curse_severity";
         public const string SettingInterval = "expies_curse_interval";
