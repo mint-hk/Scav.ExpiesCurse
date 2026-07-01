@@ -122,7 +122,6 @@ namespace Scav.ExpiesCurse
                 return;
             }
 
-            WorldSettingsApi.EnsureDefaults(WorldGeneration.runSettings);
             var enabled = WorldSettingsApi.GetBool(SettingEnabled, false);
             var intervalMinutes = Mathf.Clamp(WorldSettingsApi.GetFloat(SettingInterval, 10f), 1f, 30f);
             var severity = GetCurseSeverity(WorldGeneration.runSettings);

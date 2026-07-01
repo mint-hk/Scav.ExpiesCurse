@@ -9,7 +9,17 @@ The mod also keeps developer console commands for manually testing injuries.
 ## Requirements
 
 - Casualties Unknown / Scav Prototype
+- Windows, if using the installer
+
+The installer downloads and installs missing runtime dependencies automatically:
+
 - BepInEx 5.x
+- ScavLib API
+- Scav.WorldSettingsHelper
+
+Manual installs require those dependencies in the game folder:
+
+- BepInEx 5.x installed in the game root
 - ScavLib API installed in `BepInEx/plugins/`
 - Scav.WorldSettingsHelper installed in `BepInEx/plugins/`
 
@@ -39,7 +49,7 @@ This workspace builds against `ScavLib.API.dll` installed in the game's `BepInEx
 Scav.ExpiesCurse adds settings to the existing custom world settings menu:
 
 - `Enable Expie's curse`: enables/disables automatic random injuries for the run
-- `Injury Severity`: `Min`, `Default`, or `Max`
+- `Injury Severity`: `Min`, `Default`, or `Max`; defaults to `Default`
 - `Delay between injuries`: interval from `1` to `30` in-game minutes
 
 Automatic injuries use the game's `WorldGeneration.TotalRunTime()` timer, so speedups/resting acceleration affect the curse timer the same way they affect game run time.
@@ -111,12 +121,12 @@ Scav.ExpiesCurse.dll
 install-expies-curse.cmd
 ```
 
-Dependencies are not bundled. Install BepInEx, ScavLib API, and Scav.WorldSettingsHelper separately.
+Dependencies are not bundled in the release. The installer downloads them from their public release URLs when they are missing.
 
-An optional installer script is provided for convenience. For non-technical users, just double-click:
+For non-technical users, just double-click:
 
 ```text
 install-expies-curse.cmd
 ```
 
-The installer uses local DLLs when they are next to the script. If a dependency DLL is missing locally, it can download it when a URL is configured. By default, only `ScavLib.API.dll` has a built-in public release URL.
+The installer auto-detects common Steam install paths, installs BepInEx 5 x64 if missing, creates `BepInEx/plugins`, and installs `Scav.ExpiesCurse.dll`, `Scav.WorldSettingsHelper.dll`, and `ScavLib.API.dll`. It only asks for input if it cannot find the game folder automatically.
