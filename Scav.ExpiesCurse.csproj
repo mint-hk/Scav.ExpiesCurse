@@ -7,6 +7,8 @@
     <LangVersion>latest</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GameDir Condition="'$(GameDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Casualties Unknown Demo</GameDir>
+    <ScavLibApiPath Condition="'$(ScavLibApiPath)' == '' and Exists('lib\ScavLib.API.dll')">lib\ScavLib.API.dll</ScavLibApiPath>
+    <ScavLibApiPath Condition="'$(ScavLibApiPath)' == ''">$(GameDir)\BepInEx\plugins\ScavLib.API.dll</ScavLibApiPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +25,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="ScavLib API">
-      <HintPath>$(GameDir)\BepInEx\plugins\ScavLib.API.dll</HintPath>
+      <HintPath>$(ScavLibApiPath)</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">

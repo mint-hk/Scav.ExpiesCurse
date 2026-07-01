@@ -104,10 +104,11 @@ ri bleeding_wound high delay=true
 
 ## Release Package
 
-A release zip should contain:
+A release should provide:
 
 ```text
 Scav.ExpiesCurse.dll
+install-expies-curse.cmd
 ```
 
 Dependencies are not bundled. Install BepInEx, ScavLib API, and Scav.WorldSettingsHelper separately.
