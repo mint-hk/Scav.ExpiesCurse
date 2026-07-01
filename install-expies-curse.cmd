@@ -10,21 +10,23 @@ set "EXPIES_CURSE_LOCAL=%SCRIPT_DIR%Scav.ExpiesCurse.dll"
 set "WORLD_SETTINGS_LOCAL=%SCRIPT_DIR%Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_LOCAL=%SCRIPT_DIR%ScavLib.API.dll"
 
-set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.0/Scav.ExpiesCurse-0.1.0.zip"
-set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper-0.1.0.zip"
+set "EXPIES_CURSE_URL=https://github.com/mint-hk/Scav.ExpiesCurse/releases/download/v0.1.0/Scav.ExpiesCurse.dll"
+set "WORLD_SETTINGS_URL=https://github.com/mint-hk/Scav.WorldSettingsHelper/releases/download/v0.1.0/Scav.WorldSettingsHelper.dll"
 set "SCAVLIB_URL=https://github.com/Kanisuko/ScavLib-API-DLL-Repository/releases/download/v0.8.0/ScavLib.API.dll"
+set "BEPINEX_URL=https://github.com/BepInEx/BepInEx/releases/download/v5.4.23.3/BepInEx_win_x64_5.4.23.3.zip"
 
 echo Scav.ExpiesCurse installer
 echo.
-echo This will install Scav.ExpiesCurse.dll and required dependencies into your BepInEx plugins folder.
+echo Installing Scav.ExpiesCurse and required dependencies into your BepInEx plugins folder.
 echo.
-choice /M "Continue"
-if errorlevel 2 exit /b 0
 
 call :resolve_game_dir
 if errorlevel 1 goto :fail
 
 call :assert_game_dir
+if errorlevel 1 goto :fail
+
+call :ensure_bepinex
 if errorlevel 1 goto :fail
 
 set "PLUGINS_DIR=%GAME_DIR%\BepInEx\plugins"
@@ -68,10 +70,43 @@ if not exist "%GAME_DIR%\CasualtiesUnknown_Data\Managed\Assembly-CSharp.dll" (
     echo [Expie's Curse Installer] Invalid game directory: missing Assembly-CSharp.dll
     exit /b 1
 )
-if not exist "%GAME_DIR%\BepInEx" (
-    echo [Expie's Curse Installer] BepInEx folder not found. Install BepInEx 5 first.
+exit /b 0
+
+:ensure_bepinex
+if exist "%GAME_DIR%\BepInEx\core\BepInEx.dll" exit /b 0
+
+echo [Expie's Curse Installer] BepInEx 5 was not found.
+echo [Expie's Curse Installer] Installing BepInEx 5 x64 automatically.
+
+if not exist "%TMP_DIR%" mkdir "%TMP_DIR%"
+echo [Expie's Curse Installer] Downloading BepInEx 5 x64...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri '%BEPINEX_URL%' -OutFile '%TMP_DIR%\bepinex.zip'"
+if errorlevel 1 (
+    echo [Expie's Curse Installer] Failed to download BepInEx.
     exit /b 1
 )
+
+rmdir /s /q "%TMP_DIR%\bepinex" >nul 2>nul
+mkdir "%TMP_DIR%\bepinex"
+echo [Expie's Curse Installer] Extracting BepInEx...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Force -Path '%TMP_DIR%\bepinex.zip' -DestinationPath '%TMP_DIR%\bepinex'"
+if errorlevel 1 (
+    echo [Expie's Curse Installer] Failed to extract BepInEx.
+    exit /b 1
+)
+
+xcopy "%TMP_DIR%\bepinex\*" "%GAME_DIR%\" /E /I /Y >nul
+if errorlevel 1 (
+    echo [Expie's Curse Installer] Failed to copy BepInEx into the game directory.
+    exit /b 1
+)
+
+if not exist "%GAME_DIR%\BepInEx\core\BepInEx.dll" (
+    echo [Expie's Curse Installer] BepInEx install did not create BepInEx\core\BepInEx.dll.
+    exit /b 1
+)
+
+echo [Expie's Curse Installer] BepInEx installed.
 exit /b 0
 
 :install_dll
