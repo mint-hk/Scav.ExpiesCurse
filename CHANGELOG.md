@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Allows venom and hearing injuries to apply when the rolled effect lands exactly on the safety cap.
+
 ## 0.1.2
 
 - Fixes dislocation safety checks so skipped injuries do not mutate limbs first.

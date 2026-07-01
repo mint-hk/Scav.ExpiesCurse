@@ -162,7 +162,7 @@ namespace Scav.ExpiesCurse
             var total = Roll(60f, 85f, severity);
             var current = Roll(45f, 65f, severity);
 
-            if (PlayerUtil.GetVenomTotal() + total >= 85f || PlayerUtil.GetVenomCurrent() + current >= 75f)
+            if (PlayerUtil.GetVenomTotal() + total > 85f || PlayerUtil.GetVenomCurrent() + current > 75f)
                 return InjuryResult.Skip("venom would exceed safety limits");
 
             PlayerUtil.SetVenomTotalRaw(PlayerUtil.GetVenomTotal() + total);
@@ -247,7 +247,7 @@ namespace Scav.ExpiesCurse
             var consciousness = Roll(30f, 25f, severity);
             var head = LimbUtil.GetLimb(LimbSlot.Head);
 
-            if (PlayerUtil.GetHearingLoss() + value >= 80f || (head != null && head.pain + 100f > 100f))
+            if (PlayerUtil.GetHearingLoss() + value > 80f || (head != null && head.pain + 100f > 100f))
                 return InjuryResult.Skip("hearing loss would exceed safety limits");
 
             PlayerUtil.SetHearingLossRaw(PlayerUtil.GetHearingLoss() + value);
